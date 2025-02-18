@@ -1,6 +1,6 @@
 import reactivex.operators as ops
 import voluptuous as vol
-from homeassistant.components.dhcp import DhcpServiceInfo
+from homeassistant.helpers.service_info.dhcp import DhcpServiceInfo
 from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import CONF_HOST, CONF_MAC
 
@@ -28,12 +28,17 @@ class EcoflowConfigFlow(ConfigFlow, domain=DOMAIN):
         finally:
             tcp.close()
         if info["product"] not in PRODUCTS:
-            return self.async_abort(reason="product_unsupported", description_placeholders={"product": info["product"]})
+            return self.async_abort(
+                reason="product_unsupported",
+                description_placeholders={"product": info["product"]},
+            )
         await self.async_set_unique_id(info["serial"])
-        self._abort_if_unique_id_configured(updates={
-            CONF_HOST: self.host,
-            CONF_MAC: self.mac,
-        })
+        self._abort_if_unique_id_configured(
+            updates={
+                CONF_HOST: self.host,
+                CONF_MAC: self.mac,
+            }
+        )
         return info
 
     async def async_step_dhcp(self, discovery_info: DhcpServiceInfo):
@@ -68,8 +73,10 @@ class EcoflowConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             errors=errors,
-            data_schema=vol.Schema({
-                vol.Required(CONF_HOST, default=self.host): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_HOST, default=self.host): str,
+                }
+            ),
             last_step=True,
         )
